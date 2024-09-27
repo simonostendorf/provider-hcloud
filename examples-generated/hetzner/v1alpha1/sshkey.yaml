@@ -1,0 +1,12 @@
+apiVersion: hetzner.cloud/v1alpha1
+kind: SSHKey
+metadata:
+  annotations:
+    meta.upbound.io/example-id: hetzner/v1alpha1/sshkey
+  labels:
+    testing.upbound.io/example-name: default
+  name: default
+spec:
+  forProvider:
+    name: Terraform Example
+    publicKey: ${file("~/.ssh/id_rsa.pub")}

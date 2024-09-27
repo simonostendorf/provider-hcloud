@@ -1,0 +1,10 @@
+apiVersion: hetzner.cloud/v1alpha1
+kind: SSHKey
+metadata:
+  name: example
+spec:
+  forProvider:
+    name: example
+    publicKey: "ssh-rsa ABC123..."
+    labels:
+      crossplane: example

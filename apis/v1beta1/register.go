@@ -13,7 +13,7 @@ import (
 
 // Package type metadata.
 const (
-	Group   = "template.upbound.io"
+	Group   = "hcloud.hetzner.cloud"
 	Version = "v1beta1"
 )
 

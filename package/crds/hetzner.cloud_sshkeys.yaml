@@ -4,18 +4,18 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.14.0
-  name: resources.null.template.upbound.io
+  name: sshkeys.hetzner.cloud
 spec:
-  group: null.template.upbound.io
+  group: hetzner.cloud
   names:
     categories:
     - crossplane
     - managed
-    - template
-    kind: Resource
-    listKind: ResourceList
-    plural: resources
-    singular: resource
+    - hcloud
+    kind: SSHKey
+    listKind: SSHKeyList
+    plural: sshkeys
+    singular: sshkey
   scope: Cluster
   versions:
   - additionalPrinterColumns:
@@ -34,10 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Resource is the Schema for the Resources API. The null_resource
-          resource implements the standard resource lifecycle but takes no further
-          action.hashicorp. The triggers argument allows specifying an arbitrary set
-          of values that, when changed, will cause the resource to be replaced.
+        description: SSHKey is the Schema for the SSHKeys API. Provides a Hetzner
+          Cloud SSH key resource to manage SSH keys for server access.
         properties:
           apiVersion:
             description: |-
@@ -57,7 +55,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ResourceSpec defines the desired state of Resource
+            description: SSHKeySpec defines the desired state of SSHKey
             properties:
               deletionPolicy:
                 default: Delete
@@ -75,14 +73,24 @@ spec:
                 type: string
               forProvider:
                 properties:
-                  triggers:
+                  labels:
                     additionalProperties:
                       type: string
                     description: |-
-                      running any associated provisioners.
-                      A map of arbitrary strings that, when changed, will force the null resource to be replaced, re-running any associated provisioners.
+                      User-defined labels (key-value pairs) should be created with.
+                      User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.
                     type: object
                     x-kubernetes-map-type: granular
+                  name:
+                    description: |-
+                      Name of the SSH key.
+                      Name of the SSH key.
+                    type: string
+                  publicKey:
+                    description: |-
+                      The public key. If this is a file, it can be read using the file interpolation function
+                      Public key of the SSH key pair. If this is a file, it can be read using the `file` interpolation function.
+                    type: string
                 type: object
               initProvider:
                 description: |-
@@ -97,14 +105,24 @@ spec:
                   for example because of an external controller is managing them, like an
                   autoscaler.
                 properties:
-                  triggers:
+                  labels:
                     additionalProperties:
                       type: string
                     description: |-
-                      running any associated provisioners.
-                      A map of arbitrary strings that, when changed, will force the null resource to be replaced, re-running any associated provisioners.
+                      User-defined labels (key-value pairs) should be created with.
+                      User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.
                     type: object
                     x-kubernetes-map-type: granular
+                  name:
+                    description: |-
+                      Name of the SSH key.
+                      Name of the SSH key.
+                    type: string
+                  publicKey:
+                    description: |-
+                      The public key. If this is a file, it can be read using the file interpolation function
+                      Public key of the SSH key pair. If this is a file, it can be read using the `file` interpolation function.
+                    type: string
                 type: object
               managementPolicies:
                 default:
@@ -273,23 +291,46 @@ spec:
             required:
             - forProvider
             type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.name is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.name)
+                || (has(self.initProvider) && has(self.initProvider.name))'
+            - message: spec.forProvider.publicKey is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.publicKey)
+                || (has(self.initProvider) && has(self.initProvider.publicKey))'
           status:
-            description: ResourceStatus defines the observed state of Resource.
+            description: SSHKeyStatus defines the observed state of SSHKey.
             properties:
               atProvider:
                 properties:
-                  id:
-                    description: (String) This is set to a random value at create
-                      time.
+                  fingerprint:
+                    description: |-
+                      (string) The fingerprint of the SSH key
+                      Fingerprint of the SSH public key.
                     type: string
-                  triggers:
+                  id:
+                    description: (int) The unique ID of the key.
+                    type: string
+                  labels:
                     additionalProperties:
                       type: string
                     description: |-
-                      running any associated provisioners.
-                      A map of arbitrary strings that, when changed, will force the null resource to be replaced, re-running any associated provisioners.
+                      User-defined labels (key-value pairs) should be created with.
+                      User-defined [labels](https://docs.hetzner.cloud/#labels) (key-value pairs) for the resource.
                     type: object
                     x-kubernetes-map-type: granular
+                  name:
+                    description: |-
+                      Name of the SSH key.
+                      Name of the SSH key.
+                    type: string
+                  publicKey:
+                    description: |-
+                      The public key. If this is a file, it can be read using the file interpolation function
+                      Public key of the SSH key pair. If this is a file, it can be read using the `file` interpolation function.
+                    type: string
                 type: object
               conditions:
                 description: Conditions of the resource.
